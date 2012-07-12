@@ -1,0 +1,67 @@
+#!/sbin/sh
+
+if [ -e /cache/recovery/boot ]
+then
+
+rm /cache/recovery/boot
+touch /cache/recovery/enterrecovery
+
+else
+
+# trigger blue LED
+echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0036/leds/blue/brightness
+# trigger vibration
+echo '200' > /sys/class/timed_output/vibrator/enable
+# trigger button-backlight
+echo '255' > /sys/class/leds/button-backlight/brightness
+cat /dev/input/event0 > /dev/keycheck&
+sleep 3
+
+# trigger blue LED
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0036/leds/blue/brightness
+# trigger button-backlight
+echo '0' > /sys/class/leds/button-backlight/brightness
+
+kill -9 $!
+
+fi
+
+
+if [ -s /dev/keycheck -o -e /cache/recovery/enterrecovery ]
+then
+# fixing CPU clocks to avoid issues in recovery
+echo 1512000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+echo 1512000 > /sys/devices/system/cpu/cpu1/cpufreq/scaling_max_freq
+echo 384000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+echo 384000 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+
+rm /cache/recovery/enterrecovery
+
+# thread for restarting recovery
+/sbin/restartrecovery &
+
+mount -o remount,rw rootfs /
+# shifting to "umount -l /partition" to avoid mounting issues in recovery
+umount -l /system
+umount -l /data
+umount -l /cache
+umount -l /sdcard
+umount -l /mnt/sdcard
+rm -r /sdcard
+rm -r /not/sdcard
+mkdir /sdcard
+mkdir /tmp
+rm /etc
+mkdir /etc
+cp /recovery.fstab /etc/recovery.fstab
+mount /dev/block/mmcblk0p14 /sdcard
+
+# DooMLoRD - enable USB Mass Storage mode - thanks to Napstar
+echo 1 > /sys/devices/virtual/usb_composite/usb_mass_storage/enable
+
+/sbin/recovery &
+/sbin/adbd_rec recovery 
+fi
+
+#continue booting
+/system/bin/chargemon

@@ -1,0 +1,3 @@
+#!/sbin/sh
+ls -l $1 /tmp/tmpmd5sum | awk '{print $5}' > /tmp/tmpfilesize
+

@@ -1,0 +1,2 @@
+#!/sbin/sh
+md5sum $1 > /tmp/tmpmd5sum

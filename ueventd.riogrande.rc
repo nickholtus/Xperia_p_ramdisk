@@ -1,0 +1,5 @@
+/sys/devices/platform/musb_hdrc.0/usb* uevent 0660 root usb
+/sys/devices/av8100_hdmi* disponoff           0660 root graphics
+/sys/devices/av8100_hdmi* hdmisdtvswitch      0660 root graphics
+/dev/hdmi                                     0660 root graphics
+/dev/tee                                      0660 root system

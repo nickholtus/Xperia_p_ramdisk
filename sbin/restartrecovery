@@ -1,0 +1,23 @@
+#!/sbin/sh
+
+while [ 1 ]
+do
+
+# check power button
+cat /dev/input/event2 > /dev/keycheck&
+sleep 3
+kill -9 $!
+
+
+if [ -s /dev/keycheck ]
+then
+
+# kill recovery
+kill $(ps | grep /sbin/recovery)
+
+# reboot recovery
+/sbin/recovery &
+
+fi
+
+done
